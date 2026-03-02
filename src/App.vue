@@ -14,15 +14,13 @@
 
     <!-- Answer Buttons -->
     <div class="answers">
-      <button v-for="option in options" :key="option" @click="checkAnswer(option)" class="answer-button"
+      <button v-for="(option, i) in options" :key="i" @click="checkAnswer(option)" class="answer-button"
         :class="buttonClass(option)" :disabled="locked">
         {{ option }}
       </button>
     </div>
 
     <div class="stats">
-      Streak: {{ streak }}
-      -
       Level: {{ level }}
     </div>
   </div>
@@ -90,14 +88,15 @@ function checkAnswer(selected: number) {
   const correct = selected === correctAnswer.value
   wasCorrect.value = correct
 
+  history.value.unshift(correct)
+  if (history.value.length > 10) history.value.pop()
+
   streak.value = correct ? streak.value + 1 : 0
   if (streak.value > 5) {
     level.value++
+    history.value = []
     streak.value = 0
   }
-
-  history.value.unshift(correct)
-  if (history.value.length > 10) history.value.pop()
 
   if (correct) {
     celebrate()
@@ -175,7 +174,6 @@ generateQuestion()
 .stats {
   color: #999;
   margin-top: 2em;
-  size: 0.5em;
   font-style: italic;
 }
 
