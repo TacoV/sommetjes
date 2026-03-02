@@ -22,8 +22,8 @@
 
     <div class="stats">
       Streak: {{ streak }}
-      Input: 1-{{ maxInput }}
-      Output: 1-{{ maxOutput }}
+      -
+      Level: {{ level }}
     </div>
   </div>
 </template>
@@ -32,9 +32,10 @@
 import { ref, computed } from 'vue'
 import confetti from 'canvas-confetti'
 
-const maxInput = ref(5)
-const maxOutput = ref(12)
+const level = ref(1)
+
 const streak = ref(0)
+
 const a = ref(0)
 const b = ref(0)
 const correctAnswer = ref(0)
@@ -52,17 +53,18 @@ function randomInt(max: number): number {
 
 function generateQuestion() {
   do {
-    a.value = randomInt(maxInput.value)
-    b.value = randomInt(maxInput.value)
-  } while (a.value + b.value > maxOutput.value)
+    a.value = randomInt(level.value + 2)
+    b.value = randomInt(level.value + 2)
+  } while (a.value + b.value > level.value + 7)
 
   correctAnswer.value = a.value + b.value
 
   const answers = new Set<number>()
   answers.add(correctAnswer.value)
 
+  const highest = Math.max(9, Math.min(level.value + 7, 2 * level.value + 4))
   while (answers.size < 9) {
-    answers.add(randomInt(maxOutput.value))
+    answers.add(randomInt(highest))
   }
 
   options.value = Array.from(answers).sort(() => Math.random() - 0.5)
@@ -90,7 +92,7 @@ function checkAnswer(selected: number) {
 
   streak.value = correct ? streak.value + 1 : 0
   if (streak.value > 5) {
-    maxInput.value++
+    level.value++
     streak.value = 0
   }
 
