@@ -19,6 +19,12 @@
         {{ option }}
       </button>
     </div>
+
+    <div class="stats">
+      Streak: {{ streak }}
+      Input: 1-{{ maxInput }}
+      Output: 1-{{ maxOutput }}
+    </div>
   </div>
 </template>
 
@@ -26,6 +32,9 @@
 import { ref, computed } from 'vue'
 import confetti from 'canvas-confetti'
 
+const maxInput = ref(5)
+const maxOutput = ref(12)
+const streak = ref(0)
 const a = ref(0)
 const b = ref(0)
 const correctAnswer = ref(0)
@@ -42,19 +51,18 @@ function randomInt(max: number): number {
 }
 
 function generateQuestion() {
-  a.value = 100
-  b.value = 100
-  while (a.value + b.value > 12) {
-    a.value = randomInt(9)
-    b.value = randomInt(9)
-  }
+  do {
+    a.value = randomInt(maxInput.value)
+    b.value = randomInt(maxInput.value)
+  } while (a.value + b.value > maxOutput.value)
+
   correctAnswer.value = a.value + b.value
 
   const answers = new Set<number>()
   answers.add(correctAnswer.value)
 
-  while (answers.size < 4) {
-    answers.add(randomInt(Math.max(correctAnswer.value + 2, 10)))
+  while (answers.size < 9) {
+    answers.add(randomInt(maxOutput.value))
   }
 
   options.value = Array.from(answers).sort(() => Math.random() - 0.5)
@@ -79,6 +87,12 @@ function checkAnswer(selected: number) {
 
   const correct = selected === correctAnswer.value
   wasCorrect.value = correct
+
+  streak.value = correct ? streak.value + 1 : 0
+  if (streak.value > 5) {
+    maxInput.value++
+    streak.value = 0
+  }
 
   history.value.unshift(correct)
   if (history.value.length > 10) history.value.pop()
@@ -118,6 +132,7 @@ generateQuestion()
   text-align: center;
   font-family: sans-serif;
   padding: 20px;
+  height: 100%;
   transition: background-color 0.3s ease;
 }
 
@@ -134,7 +149,7 @@ generateQuestion()
 .tracking {
   font-size: 2rem;
   margin-bottom: 20px;
-  min-height: 40px;
+  min-height: 48px;
 }
 
 .mark {
@@ -155,10 +170,17 @@ generateQuestion()
   margin: 30px 0;
 }
 
+.stats {
+  color: #999;
+  margin-top: 2em;
+  size: 0.5em;
+  font-style: italic;
+}
+
 /* Answers grid */
 .answers {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   max-width: 400px;
   margin: 0 auto;
@@ -173,6 +195,7 @@ generateQuestion()
   background-color: #f0f0f0;
   cursor: pointer;
   transition: transform 0.1s ease, background-color 0.3s ease;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 .answer-button:active {
